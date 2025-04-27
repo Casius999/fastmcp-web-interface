@@ -1,0 +1,26 @@
+version: '3.8'
+
+services:
+  fastmcp-server:
+    build: .
+    image: fastmcp-web-interface-server
+    command: python server.py
+    networks:
+      - fastmcp-network
+    restart: unless-stopped
+
+  fastmcp-web:
+    build: .
+    image: fastmcp-web-interface-web
+    command: uvicorn app:app --host 0.0.0.0 --port 8000
+    ports:
+      - "8000:8000"
+    depends_on:
+      - fastmcp-server
+    networks:
+      - fastmcp-network
+    restart: unless-stopped
+
+networks:
+  fastmcp-network:
+    driver: bridge
