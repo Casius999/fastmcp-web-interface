@@ -2,9 +2,16 @@
 
 Une interface web intuitive pour FastMCP, permettant aux utilisateurs novices d'utiliser FastMCP sans complexité technique.
 
+## État du projet
+
+**État actuel :** Version 1.0 - Déployée en production
+**Dernière mise à jour :** 28 avril 2025
+
+Le projet est actuellement opérationnel via une interface web simplifiée. Certains défis d'encodage ont été identifiés et seront résolus dans les prochaines versions.
+
 ## Architecture
 
-Le projet est composé de trois couches principales :
+Le projet est conçu selon une architecture en trois couches :
 
 1. **Backend FastMCP** (server.py)
    - Un serveur FastMCP avec des outils définis via des décorateurs
@@ -32,6 +39,12 @@ cd fastmcp-web-interface
 
 # Installer les dépendances
 pip install -r requirements.txt
+
+# Démarrer le serveur FastMCP
+python server.py
+
+# Dans un autre terminal, démarrer l'API Web
+uvicorn app:app --reload
 ```
 
 ### Méthode 2 : Utilisation de Docker
@@ -45,68 +58,62 @@ cd fastmcp-web-interface
 docker-compose up -d
 ```
 
-## Utilisation
+## Défis connus et solutions
 
-### Démarrage avec installation locale
+### Problèmes d'encodage
 
-1. Démarrer le serveur FastMCP (dans un terminal) :
-```bash
-python server.py
-```
+Certains fichiers Python contiennent des caractères accentués qui peuvent causer des problèmes d'encodage. Solution temporaire :
 
-2. Démarrer l'API Web (dans un autre terminal) :
-```bash
-uvicorn app:app --reload
-```
+1. Ajouter `# -*- coding: utf-8 -*-` au début de chaque fichier Python
+2. Remplacer les caractères accentués par leurs équivalents non accentués
 
-3. Ouvrir votre navigateur à l'adresse http://localhost:8000
+### Communication entre conteneurs Docker
 
-### Démarrage avec Docker
+Si vous rencontrez des problèmes de communication entre les conteneurs FastMCP et FastAPI, vérifiez les points suivants :
 
-Après avoir exécuté `docker-compose up -d`, ouvrez simplement votre navigateur à l'adresse http://localhost:8000
+1. Les services sont sur le même réseau Docker
+2. Les noms d'hôtes sont correctement référencés dans les configurations
+3. Les ports sont correctement exposés
 
-## Fonctionnalités
+## Développements futurs
 
-- Interface utilisateur intuitive pour les utilisateurs novices
-- Architecture en trois couches pour une séparation claire des responsabilités
-- Gestion robuste des erreurs pour une expérience utilisateur optimale
-- Possibilité d'ajouter facilement de nouveaux outils
+### Version 1.1 (Court terme)
 
-## Ajout de nouveaux outils
+- **Correction des problèmes d'encodage** : Standardiser tous les fichiers avec l'encodage UTF-8
+- **Amélioration de la robustesse** : Gestion plus avancée des erreurs
+- **Documentation intégrée** : Ajouter une page de documentation accessible depuis l'interface
 
-Pour ajouter un nouvel outil au serveur FastMCP :
+### Version 1.2 (Moyen terme)
 
-1. Ouvrir le fichier `server.py`
-2. Ajouter un nouveau décorateur `@mcp.tool()` avec la fonction correspondante
-3. Mettre à jour l'API et l'interface utilisateur si nécessaire
+- **Chargement dynamique des outils** : Permettre à l'API de découvrir automatiquement les outils disponibles
+- **Interface utilisateur améliorée** : Ajouter des composants interactifs et un design responsive
+- **Authentification légère** : Ajouter une couche d'authentification simple pour sécuriser l'accès
 
-Exemple d'ajout d'un nouvel outil de calcul :
+### Version 2.0 (Long terme)
 
-```python
-@mcp.tool()
-def calculate(operation: str, a: float, b: float) -> float:
-    """Effectue une opération mathématique simple."""
-    if operation == "add":
-        return a + b
-    elif operation == "subtract":
-        return a - b
-    elif operation == "multiply":
-        return a * b
-    elif operation == "divide":
-        if b == 0:
-            raise ValueError("Division par zéro impossible")
-        return a / b
-    else:
-        raise ValueError(f"Opération non reconnue : {operation}")
-```
+- **Gestionnaire de workflows** : Permettre de chaîner plusieurs outils dans un workflow
+- **Intégration de WebSockets** : Communication en temps réel pour les tâches longues
+- **Stockage persistant** : Sauvegarder les résultats des outils pour référence ultérieure
+- **Interface multi-langue** : Support pour plusieurs langues dans l'interface
+- **Mode hors ligne** : Possibilité d'utiliser certaines fonctionnalités sans connexion permanente
 
-## Extensions futures
+### Vision technique
 
-- Chargement dynamique des outils disponibles sur le serveur FastMCP
-- Génération automatique des formulaires en fonction des paramètres des outils
-- Authentification et autorisation pour sécuriser l'accès
-- Communication en temps réel via WebSockets
-- Journalisation des appels d'outils pour le suivi et le débogage
+- **Microservices** : Diviser l'application en microservices spécialisés
+- **API Gateway** : Ajouter une couche d'abstraction pour unifier l'accès aux différentes fonctionnalités
+- **Tests automatisés** : Développer une suite de tests complète pour garantir la qualité
+- **CI/CD** : Mettre en place un pipeline d'intégration et déploiement continus
+- **Monitoring** : Ajouter des outils de surveillance et d'alerte
+
+## Contribution
+
+Les contributions sont les bienvenues ! Pour contribuer :
+
+1. Forkez le projet
+2. Créez une branche pour votre fonctionnalité (`git checkout -b feature/amazing-feature`)
+3. Committez vos changements (`git commit -m 'Add some amazing feature'`)
+4. Poussez vers la branche (`git push origin feature/amazing-feature`)
+5. Ouvrez une Pull Request
 
 ## Principes d'intégrité
 
@@ -117,17 +124,6 @@ Ce projet adhère aux principes d'intégrité systémique suivants :
 - **Vérifiabilité** : Le code est commenté et structuré pour faciliter la compréhension
 - **Transparence** : L'architecture est clairement définie et documentée
 - **Intégrité** : La gestion des erreurs assure que les données incorrectes sont rejetées
-
-## API Reference
-
-### Endpoints
-
-- `POST /call_tool/` : Exécute un outil FastMCP
-  - Body: `{ "tool_name": string, "params": object }`
-  - Response: `{ "result": any }`
-
-- `GET /list_tools/` : Liste les outils disponibles
-  - Response: `{ "tools": array }`
 
 ## Licence
 
