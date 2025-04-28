@@ -4,175 +4,68 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Interface FastMCP</title>
-    <style>
-        body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            margin: 0;
-            padding: 20px;
-            background-color: #f5f5f5;
-            color: #333;
-        }
-        .container {
-            max-width: 800px;
-            margin: 0 auto;
-            background-color: white;
-            padding: 30px;
-            border-radius: 8px;
-            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
-        }
-        h1 {
-            color: #2c3e50;
-            margin-top: 0;
-            border-bottom: 2px solid #ecf0f1;
-            padding-bottom: 10px;
-        }
-        form {
-            margin-top: 20px;
-        }
-        label {
-            display: block;
-            margin-bottom: 8px;
-            font-weight: 600;
-        }
-        select, input {
-            width: 100%;
-            padding: 10px;
-            margin-bottom: 20px;
-            border: 1px solid #ddd;
-            border-radius: 4px;
-            font-size: 16px;
-        }
-        button {
-            background-color: #3498db;
-            color: white;
-            border: none;
-            padding: 12px 20px;
-            border-radius: 4px;
-            cursor: pointer;
-            font-size: 16px;
-            transition: background-color 0.3s;
-        }
-        button:hover {
-            background-color: #2980b9;
-        }
-        #result {
-            margin-top: 30px;
-            padding: 15px;
-            background-color: #f8f9fa;
-            border-left: 4px solid #3498db;
-            border-radius: 4px;
-            min-height: 50px;
-        }
-        .error {
-            color: #e74c3c;
-            border-left: 4px solid #e74c3c;
-        }
-        .loading {
-            display: inline-block;
-            width: 20px;
-            height: 20px;
-            border: 3px solid rgba(0, 0, 0, 0.1);
-            border-radius: 50%;
-            border-top-color: #3498db;
-            animation: spin 1s ease-in-out infinite;
-            margin-left: 10px;
-        }
-        @keyframes spin {
-            to { transform: rotate(360deg); }
-        }
-    </style>
+    <link rel="stylesheet" href="/static/css/styles.css">
+    <link rel="icon" href="/static/favicon.ico" type="image/x-icon">
 </head>
 <body>
     <div class="container">
-        <h1>Interface FastMCP</h1>
-        <p>Cette interface permet d'utiliser FastMCP de manière simple et intuitive, sans complexité technique.</p>
+        <header class="header">
+            <h1>Interface FastMCP</h1>
+            <p class="version">v1.0</p>
+        </header>
         
-        <form id="toolForm">
-            <label for="tool">Outil :</label>
-            <select id="tool" name="tool_name">
-                <option value="greet">Greet (Message de bienvenue)</option>
-                <!-- D'autres outils seront ajoutés dynamiquement ici -->
-            </select>
-            
-            <div id="paramFields">
-                <label for="name">Nom :</label>
-                <input type="text" id="name" name="name" required/>
+        <div class="description">
+            <p>Cette interface permet d'utiliser FastMCP de manière simple et intuitive, sans complexité technique.</p>
+        </div>
+
+        <div id="loginSection" style="display: none;">
+            <form id="loginForm" class="form">
+                <div class="form-title">Connexion</div>
+                <div class="form-group">
+                    <label for="username">Nom d'utilisateur:</label>
+                    <input type="text" id="username" name="username" required>
+                </div>
+                <div class="form-group">
+                    <label for="password">Mot de passe:</label>
+                    <input type="password" id="password" name="password" required>
+                </div>
+                <div class="form-error" id="loginError"></div>
+                <button type="submit" class="btn primary-btn">Se connecter</button>
+            </form>
+        </div>
+        
+        <div id="toolSection">
+            <div id="userInfo" class="user-info" style="display: none;">
+                <span>Connecté en tant que: <strong id="userDisplayName"></strong></span>
+                <button id="logoutBtn" class="btn secondary-btn small-btn">Déconnexion</button>
             </div>
             
-            <button type="submit">Exécuter <span id="loading" class="loading" style="display: none;"></span></button>
-        </form>
-        
-        <div id="result">
-            <em>Le résultat s'affichera ici après exécution...</em>
+            <form id="toolForm" class="form">
+                <div class="form-title">Exécuter un outil</div>
+                <div class="form-group">
+                    <label for="tool">Outil:</label>
+                    <select id="tool" name="tool_name" class="select-tool"></select>
+                    <div class="tool-description" id="toolDescription"></div>
+                </div>
+                
+                <div id="paramFields" class="dynamic-fields"></div>
+                
+                <button type="submit" class="btn primary-btn">Exécuter <span id="loading" class="loading" style="display: none;"></span></button>
+            </form>
+            
+            <div id="result" class="result-box">
+                <div class="result-header">Résultat</div>
+                <div id="resultContent" class="result-content">
+                    <em>Le résultat s'affichera ici après exécution...</em>
+                </div>
+            </div>
         </div>
+        
+        <footer class="footer">
+            <p>&copy; 2025 Interface FastMCP - <a href="/docs" target="_blank">Documentation API</a></p>
+        </footer>
     </div>
 
-    <script>
-        document.getElementById("toolForm").addEventListener("submit", async function(e) {
-            e.preventDefault();
-            // Afficher l'indicateur de chargement
-            document.getElementById("loading").style.display = "inline-block";
-            // Réinitialiser les résultats précédents
-            const resultElement = document.getElementById("result");
-            resultElement.className = "";
-            resultElement.innerHTML = "<em>Traitement en cours...</em>";
-            
-            try {
-                const toolName = document.getElementById("tool").value;
-                const name = document.getElementById("name").value;
-                
-                const response = await fetch("/call_tool/", {
-                    method: "POST",
-                    headers: { "Content-Type": "application/json" },
-                    body: JSON.stringify({
-                        tool_name: toolName,
-                        params: { name: name }
-                    })
-                });
-                
-                // Cacher l'indicateur de chargement
-                document.getElementById("loading").style.display = "none";
-                
-                if (!response.ok) {
-                    const errorData = await response.json();
-                    throw new Error(errorData.detail || "Une erreur s'est produite lors de l'exécution de l'outil.");
-                }
-                
-                const data = await response.json();
-                resultElement.innerHTML = "<strong>Résultat :</strong> " + data.result;
-            } catch (error) {
-                // Cacher l'indicateur de chargement en cas d'erreur
-                document.getElementById("loading").style.display = "none";
-                // Afficher l'erreur
-                resultElement.className = "error";
-                resultElement.innerHTML = "<strong>Erreur :</strong> " + error.message;
-            }
-        });
-        
-        // Fonction pour charger dynamiquement les outils disponibles (extension future)
-        async function loadAvailableTools() {
-            try {
-                const response = await fetch("/list_tools/");
-                const data = await response.json();
-                
-                const toolSelect = document.getElementById("tool");
-                // Vider le select
-                toolSelect.innerHTML = "";
-                
-                // Ajouter les outils disponibles
-                data.tools.forEach(tool => {
-                    const option = document.createElement("option");
-                    option.value = tool.name;
-                    option.textContent = `${tool.name} (${tool.description})`;
-                    toolSelect.appendChild(option);
-                });
-            } catch (error) {
-                console.error("Erreur lors du chargement des outils disponibles :", error);
-            }
-        }
-        
-        // Charger les outils au chargement de la page
-        window.addEventListener("DOMContentLoaded", loadAvailableTools);
-    </script>
+    <script src="/static/js/app.js"></script>
 </body>
 </html>
