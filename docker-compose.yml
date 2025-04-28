@@ -2,25 +2,54 @@ version: '3.8'
 
 services:
   fastmcp-server:
-    build: .
+    build:
+      context: .
+      dockerfile: Dockerfile
     image: fastmcp-web-interface-server
+    container_name: fastmcp-server
     command: python server.py
     networks:
       - fastmcp-network
+    volumes:
+      - ./logs:/app/logs
     restart: unless-stopped
+    env_file:
+      - .env
+    healthcheck:
+      test: ["CMD", "python", "-c", "import socket; s = socket.socket(socket.AF_INET, socket.SOCK_STREAM); s.connect((\"localhost\", 50051)) or exit(1)"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 10s
 
   fastmcp-web:
-    build: .
+    build:
+      context: .
+      dockerfile: Dockerfile
     image: fastmcp-web-interface-web
-    command: uvicorn app:app --host 0.0.0.0 --port 8000
+    container_name: fastmcp-web
+    command: uvicorn app:app --host 0.0.0.0 --port 8000 --workers 4
     ports:
       - "8000:8000"
     depends_on:
       - fastmcp-server
     networks:
       - fastmcp-network
+    volumes:
+      - ./logs:/app/logs
     restart: unless-stopped
+    env_file:
+      - .env
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 10s
 
 networks:
   fastmcp-network:
     driver: bridge
+
+volumes:
+  logs:
